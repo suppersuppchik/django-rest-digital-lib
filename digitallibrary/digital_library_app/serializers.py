@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from . import models
-
+from django.db import transaction
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,10 +22,18 @@ class BookSerializer(serializers.ModelSerializer):
 
 
 class CreateBookSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
 
     class Meta:
         model = models.Book
         fields = ["title", "author"]
+
+    @transaction.atomic
+    def craate_book_and_author(self, validated_data):
+        author = models.Author.objects.create(**validated_data['author'])
+        book = models.Book.objects.create(title=int(validated_data['title']),
+                                          author=author)
+        return book
 
 
 class UpdateBookSerializer(serializers.ModelSerializer):

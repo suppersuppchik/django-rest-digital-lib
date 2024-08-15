@@ -28,19 +28,21 @@ def crud_view(request):
         return Response(serializer.data)
     else:
         serializer = serializers.CreateBookSerializer(data=request.data)
+        
         if serializer.is_valid():
-            book = serializer.create(serializer.data)
-
+            serializer.craate_book_and_author(serializer.validated_data)
+            print('VD', serializer.validated_data)
             return Response(serializer.data)
-        return Response(status=400)
+        return Response(serializer.errors,status=400)
 
 
 class BookView(viewsets.ModelViewSet):
     queryset = models.Book.objects.all()
     serializer_class = serializers.BookSerializer
     filterset_class = BookFilter
+
     def list(self, request, *args, **kwargs):
-        self.serializer_class=serializers.ListBookSerializer
+        self.serializer_class = serializers.ListBookSerializer
         return super().list(request, *args, **kwargs)
 
     def get_object(self):
@@ -49,6 +51,7 @@ class BookView(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         self.serializer_class = serializers.CreateBookSerializer
+
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
